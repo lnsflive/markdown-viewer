@@ -1,0 +1,19 @@
+{
+  "productName": "markdown-viewer",
+  "bundle": {
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/markdown-viewer.desktop",
+        "preInstallScript": "linux/cleanup-legacy-desktop.sh",
+        "postInstallScript": "linux/refresh-desktop-database.sh",
+        "postRemoveScript": "linux/refresh-desktop-database.sh"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/markdown-viewer.desktop",
+        "preInstallScript": "linux/cleanup-legacy-desktop.sh",
+        "postInstallScript": "linux/refresh-desktop-database.sh",
+        "postRemoveScript": "linux/refresh-desktop-database.sh"
+      }
+    }
+  }
+}

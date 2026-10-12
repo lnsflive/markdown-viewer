@@ -1,0 +1,18 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/schemas/
+graphify-out/
+*.exe
+*.msi
+*.nsis
+
+# IDE
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log

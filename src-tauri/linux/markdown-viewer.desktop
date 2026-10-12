@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Office;TextEditor;Utility;
+Comment=View and edit Markdown documents
+Exec={{exec}} %F
+StartupWMClass=markdown-viewer
+Icon={{icon}}
+Name=Markdown Viewer
+Terminal=false
+Type=Application
+MimeType={{mime_type}};text/x-markdown;
