@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        with:
+          updaterJsonPreferNsis: true
+          tagName: ${{ github.ref_name }}
+          releaseName: "Markdown Viewer ${{ github.ref_name }}"
+          releaseBody: |
+            ## Markdown Viewer ${{ github.ref_name }}
+
+            - Split-pane editor with live preview, and Edit, Split, and Read modes
+            - Tabbed editing, with a separate cursor and undo history for each tab
+            - Filesystem sidebar with lazy-loaded folders and a home shortcut
+            - Drag-and-drop markdown files to open them
+            - Dark and light theme
+            - Native Markdown file associations on Windows, macOS, and installed Linux packages
+            - Keyboard shortcuts: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+W, Ctrl+B, and Ctrl+Tab
+            - Unsaved tabs ask before closing, and file errors are shown
+            - Shortcuts work in Read mode, and switching views keeps your place
+            - Preview skips raw HTML, opens safe links outside the app, and shows images next to a saved note
+            - Opening a file accepts `.md`, `.markdown`, `.mdown`, `.mkd`, and `.mkdn`
+            - The sidebar skips empty removable drives
+            - Help menu with About: the running version, a startup update check, copyable version info, and in-app download and install for every package (Linux `.deb` and `.rpm` ask for your password)
+            - Opt-in **Add "New Markdown" to right-click menu** in Help: adds **New → Markdown Document** to Windows Explorer for the current user (removed on uninstall), and a Markdown Document template for GNOME, Thunar, Nemo, and KDE on Linux
+
+            ## Downloads
+
+            | Platform | File | Type |
+            |----------|------|------|
+            | Windows | `Markdown.Viewer_x.x.x_x64-setup.exe` | NSIS Installer |
+            | Windows | `Markdown.Viewer_x.x.x_x64_en-US.msi` | MSI Installer |
+            | macOS (Apple Silicon) | `Markdown.Viewer_x.x.x_aarch64.dmg` | Disk Image |
+            | macOS (Intel) | `Markdown.Viewer_x.x.x_x64.dmg` | Disk Image |
+            | Linux | `markdown-viewer_x.x.x_amd64.deb` | Debian Package |
+            | Linux | `markdown-viewer_x.x.x_amd64.AppImage` | AppImage (portable) |
+            | Linux | `markdown-viewer_x.x.x_amd64.rpm` | RPM Package |
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.target }}
